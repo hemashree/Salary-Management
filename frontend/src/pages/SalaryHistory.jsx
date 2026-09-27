@@ -1,28 +1,50 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import SalaryForm from "./SalaryForm";
 
 function SalaryHistory({ employee, onBack }) {
   const [salaries, setSalaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const fetchSalaries = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.get(
+        `/employees/${employee.id}/salaries`
+      );
+
+      setSalaries(response.data);
+    } catch (err) {
+      setError("Unable to load salary history.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSalaries = async () => {
-      try {
-        const response = await api.get(
-          `/employees/${employee.id}/salaries`
-        );
-
-        setSalaries(response.data);
-      } catch (err) {
-        setError("Unable to load salary history.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSalaries();
   }, [employee.id]);
+
+  const handleSalaryCreated = () => {
+    setShowForm(false);
+    fetchSalaries();
+  };
+
+  if (showForm) {
+    return (
+      <div className="dashboard">
+        <SalaryForm
+          employee={employee}
+          onSuccess={handleSalaryCreated}
+          onCancel={() => setShowForm(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -30,9 +52,14 @@ function SalaryHistory({ employee, onBack }) {
         <button onClick={onBack}>← Back to Employees</button>
 
         <h1>Salary History</h1>
+
         <p>
           {employee.full_name} — {employee.designation}
         </p>
+
+        <button onClick={() => setShowForm(true)}>
+          + Add Salary
+        </button>
       </div>
 
       <div className="dashboard-section">
@@ -62,11 +89,17 @@ function SalaryHistory({ employee, onBack }) {
                 {salaries.map((salary) => (
                   <tr key={salary.id}>
                     <td>
-                      {Number(salary.base_salary).toLocaleString()}
+                      {Number(
+                        salary.base_salary
+                      ).toLocaleString()}
                     </td>
+
                     <td>
-                      {Number(salary.bonus).toLocaleString()}
+                      {Number(
+                        salary.bonus
+                      ).toLocaleString()}
                     </td>
+
                     <td>
                       <strong>
                         {Number(
@@ -74,9 +107,14 @@ function SalaryHistory({ employee, onBack }) {
                         ).toLocaleString()}
                       </strong>
                     </td>
+
                     <td>{salary.currency}</td>
+
                     <td>{salary.effective_from}</td>
-                    <td>{salary.effective_to || "Current"}</td>
+
+                    <td>
+                      {salary.effective_to || "Current"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
