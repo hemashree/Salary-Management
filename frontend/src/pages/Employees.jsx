@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import EmployeeForm from "./EmployeeForm";
+import SalaryHistory from "./SalaryHistory";
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -14,6 +15,7 @@ function Employees() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [viewingSalaryEmployee, setViewingSalaryEmployee] = useState(null);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -65,27 +67,27 @@ function Employees() {
     fetchEmployees();
   };
 
-const handleEdit = (employee) => {
-  setEditingEmployee(employee);
-  setShowForm(true);
-};
+  const handleEdit = (employee) => {
+    setEditingEmployee(employee);
+    setShowForm(true);
+  };
 
-const handleDelete = async (employee) => {
-  const confirmed = window.confirm(
-    `Are you sure you want to delete ${employee.full_name}?`
-  );
+  const handleDelete = async (employee) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${employee.full_name}?`
+    );
 
-  if (!confirmed) {
-    return;
-  }
+    if (!confirmed) {
+      return;
+    }
 
-  try {
-    await api.delete(`/employees/${employee.id}`);
-    fetchEmployees();
-  } catch (error) {
-    setError("Unable to delete employee.");
-  }
-};
+    try {
+      await api.delete(`/employees/${employee.id}`);
+      fetchEmployees();
+    } catch (error) {
+      setError("Unable to delete employee.");
+    }
+  };
 
   if (showForm) {
     return (
@@ -99,6 +101,15 @@ const handleDelete = async (employee) => {
           }}
         />
       </div>
+    );
+  }
+
+  if (viewingSalaryEmployee) {
+    return (
+      <SalaryHistory
+        employee={viewingSalaryEmployee}
+        onBack={() => setViewingSalaryEmployee(null)}
+      />
     );
   }
 
@@ -214,16 +225,26 @@ const handleDelete = async (employee) => {
                       <td>{employee.department}</td>
                       <td>{employee.designation}</td>
                       <td>{employee.status}</td>
+
                       <td>
                         <button onClick={() => handleEdit(employee)}>
-                            Edit
+                          Edit
                         </button>
 
                         <button
-                            onClick={() => handleDelete(employee)}
-                            style={{ marginLeft: "8px" }}
+                          onClick={() =>
+                            setViewingSalaryEmployee(employee)
+                          }
+                          style={{ marginLeft: "8px" }}
                         >
-                            Delete
+                          View Salary
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(employee)}
+                          style={{ marginLeft: "8px" }}
+                        >
+                          Delete
                         </button>
                       </td>
                     </tr>
