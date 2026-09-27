@@ -10,5 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_071408) do
+  create_table "employees", force: :cascade do |t|
+    t.string "first_name", null: false
+    t.string "last_name", null: false
+    t.string "email", null: false
+    t.string "country", null: false
+    t.string "department", null: false
+    t.string "designation", null: false
+    t.date "date_of_joining", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country", "department"], name: "index_employees_on_country_and_department"
+    t.index ["country"], name: "index_employees_on_country"
+    t.index ["department"], name: "index_employees_on_department"
+    t.index ["email"], name: "index_employees_on_email", unique: true
+    t.index ["status"], name: "index_employees_on_status"
+  end
 end
