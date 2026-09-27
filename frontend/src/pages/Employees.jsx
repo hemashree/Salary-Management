@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import EmployeeForm from "./EmployeeForm";
 
 function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -11,6 +12,7 @@ function Employees() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -55,11 +57,34 @@ function Employees() {
     setPage(1);
   };
 
+  const handleEmployeeCreated = () => {
+    setShowForm(false);
+    setPage(1);
+    fetchEmployees();
+  };
+
+  if (showForm) {
+    return (
+      <div className="dashboard">
+        <EmployeeForm
+          onSuccess={handleEmployeeCreated}
+          onCancel={() => setShowForm(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>Employee Management</h1>
-        <p>Search, filter and manage employees</p>
+        <div>
+          <h1>Employee Management</h1>
+          <p>Search, filter and manage employees</p>
+        </div>
+
+        <button onClick={() => setShowForm(true)}>
+          + Add Employee
+        </button>
       </div>
 
       <div className="dashboard-section">
@@ -115,6 +140,7 @@ function Employees() {
           </select>
 
           <button type="submit">Search</button>
+
           <button type="button" onClick={clearFilters}>
             Clear
           </button>
@@ -169,7 +195,8 @@ function Employees() {
               </button>
 
               <span style={{ margin: "0 15px" }}>
-                Page {pagination.page || page} of {pagination.total_pages || 1}
+                Page {pagination.page || page} of{" "}
+                {pagination.total_pages || 1}
               </span>
 
               <button
