@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
-function EmployeeForm({ onSuccess, onCancel }) {
+function EmployeeForm({ employee, onSuccess, onCancel }) {
+  const isEditMode = Boolean(employee);
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -15,6 +17,21 @@ function EmployeeForm({ onSuccess, onCancel }) {
 
   const [errors, setErrors] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (employee) {
+      setFormData({
+        first_name: employee.first_name || "",
+        last_name: employee.last_name || "",
+        email: employee.email || "",
+        country: employee.country || "India",
+        department: employee.department || "Engineering",
+        designation: employee.designation || "Software Engineer",
+        date_of_joining: employee.date_of_joining || "",
+        status: employee.status || "active",
+      });
+    }
+  }, [employee]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -31,16 +48,24 @@ function EmployeeForm({ onSuccess, onCancel }) {
     setErrors([]);
 
     try {
-      await api.post("/employees", {
-        employee: formData,
-      });
+      if (isEditMode) {
+        await api.patch(`/employees/${employee.id}`, {
+          employee: formData,
+        });
+      } else {
+        await api.post("/employees", {
+          employee: formData,
+        });
+      }
 
       onSuccess();
     } catch (error) {
       const apiErrors = error.response?.data?.errors;
 
       setErrors(
-        apiErrors || ["Unable to create employee. Please try again."]
+        apiErrors || [
+          `Unable to ${isEditMode ? "update" : "create"} employee. Please try again.`,
+        ]
       );
     } finally {
       setSaving(false);
@@ -49,7 +74,7 @@ function EmployeeForm({ onSuccess, onCancel }) {
 
   return (
     <div className="dashboard-section">
-      <h2>Add Employee</h2>
+      <h2>{isEditMode ? "Edit Employee" : "Add Employee"}</h2>
 
       {errors.length > 0 && (
         <div className="form-errors">
@@ -169,7 +194,11 @@ function EmployeeForm({ onSuccess, onCancel }) {
 
         <div className="form-actions">
           <button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Create Employee"}
+            {saving
+              ? "Saving..."
+              : isEditMode
+                ? "Update Employee"
+                : "Create Employee"}
           </button>
 
           <button type="button" onClick={onCancel}>

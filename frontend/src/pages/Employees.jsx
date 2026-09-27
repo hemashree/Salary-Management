@@ -13,6 +13,7 @@ function Employees() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -59,16 +60,26 @@ function Employees() {
 
   const handleEmployeeCreated = () => {
     setShowForm(false);
+    setEditingEmployee(null);
     setPage(1);
     fetchEmployees();
+  };
+
+  const handleEdit = (employee) => {
+    setEditingEmployee(employee);
+    setShowForm(true);
   };
 
   if (showForm) {
     return (
       <div className="dashboard">
         <EmployeeForm
+          employee={editingEmployee}
           onSuccess={handleEmployeeCreated}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingEmployee(null);
+          }}
         />
       </div>
     );
@@ -82,7 +93,12 @@ function Employees() {
           <p>Search, filter and manage employees</p>
         </div>
 
-        <button onClick={() => setShowForm(true)}>
+        <button
+          onClick={() => {
+            setEditingEmployee(null);
+            setShowForm(true);
+          }}
+        >
           + Add Employee
         </button>
       </div>
@@ -168,6 +184,7 @@ function Employees() {
                     <th>Department</th>
                     <th>Designation</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
 
@@ -180,6 +197,11 @@ function Employees() {
                       <td>{employee.department}</td>
                       <td>{employee.designation}</td>
                       <td>{employee.status}</td>
+                      <td>
+                        <button onClick={() => handleEdit(employee)}>
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
