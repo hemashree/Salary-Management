@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_071408) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_072240) do
   create_table "employees", force: :cascade do |t|
     t.string "first_name", null: false
     t.string "last_name", null: false
@@ -28,4 +28,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_071408) do
     t.index ["email"], name: "index_employees_on_email", unique: true
     t.index ["status"], name: "index_employees_on_status"
   end
+
+  create_table "salaries", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.decimal "base_salary", precision: 15, scale: 2, null: false
+    t.decimal "bonus", precision: 15, scale: 2, default: "0.0", null: false
+    t.string "currency", null: false
+    t.date "effective_from", null: false
+    t.date "effective_to"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["currency"], name: "index_salaries_on_currency"
+    t.index ["effective_from"], name: "index_salaries_on_effective_from"
+    t.index ["employee_id", "effective_from"], name: "index_salaries_on_employee_id_and_effective_from"
+    t.index ["employee_id"], name: "index_salaries_on_employee_id"
+  end
+
+  add_foreign_key "salaries", "employees"
 end
