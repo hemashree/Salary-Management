@@ -65,10 +65,27 @@ function Employees() {
     fetchEmployees();
   };
 
-  const handleEdit = (employee) => {
-    setEditingEmployee(employee);
-    setShowForm(true);
-  };
+const handleEdit = (employee) => {
+  setEditingEmployee(employee);
+  setShowForm(true);
+};
+
+const handleDelete = async (employee) => {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete ${employee.full_name}?`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await api.delete(`/employees/${employee.id}`);
+    fetchEmployees();
+  } catch (error) {
+    setError("Unable to delete employee.");
+  }
+};
 
   if (showForm) {
     return (
@@ -199,7 +216,14 @@ function Employees() {
                       <td>{employee.status}</td>
                       <td>
                         <button onClick={() => handleEdit(employee)}>
-                          Edit
+                            Edit
+                        </button>
+
+                        <button
+                            onClick={() => handleDelete(employee)}
+                            style={{ marginLeft: "8px" }}
+                        >
+                            Delete
                         </button>
                       </td>
                     </tr>
