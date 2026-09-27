@@ -41,6 +41,26 @@ function SalaryHistory({ employee, onBack }) {
     setShowForm(true);
   };
 
+  const handleDelete = async (salary) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this salary record?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.delete(
+        `/employees/${employee.id}/salaries/${salary.id}`
+      );
+
+      fetchSalaries();
+    } catch (err) {
+      setError("Unable to delete salary record.");
+    }
+  };
+
   if (showForm) {
     return (
       <div className="dashboard">
@@ -138,6 +158,13 @@ function SalaryHistory({ employee, onBack }) {
                         onClick={() => handleEdit(salary)}
                       >
                         Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(salary)}
+                        style={{ marginLeft: "8px" }}
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
