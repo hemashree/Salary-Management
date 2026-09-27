@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
-function SalaryForm({ employee, onSuccess, onCancel }) {
+function SalaryForm({ employee, salary, onSuccess, onCancel }) {
+  const isEditMode = Boolean(salary);
+
   const [formData, setFormData] = useState({
     base_salary: "",
     bonus: "0",
@@ -12,6 +14,18 @@ function SalaryForm({ employee, onSuccess, onCancel }) {
 
   const [errors, setErrors] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (salary) {
+      setFormData({
+        base_salary: salary.base_salary || "",
+        bonus: salary.bonus || "0",
+        currency: salary.currency || "INR",
+        effective_from: salary.effective_from || "",
+        effective_to: salary.effective_to || "",
+      });
+    }
+  }, [salary]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -28,19 +42,33 @@ function SalaryForm({ employee, onSuccess, onCancel }) {
     setErrors([]);
 
     try {
-      await api.post(`/employees/${employee.id}/salaries`, {
+      const payload = {
         salary: {
           ...formData,
           effective_to: formData.effective_to || null,
         },
-      });
+      };
+
+      if (isEditMode) {
+        await api.patch(
+          `/employees/${employee.id}/salaries/${salary.id}`,
+          payload
+        );
+      } else {
+        await api.post(
+          `/employees/${employee.id}/salaries`,
+          payload
+        );
+      }
 
       onSuccess();
     } catch (error) {
       const apiErrors = error.response?.data?.errors;
 
       setErrors(
-        apiErrors || ["Unable to create salary. Please try again."]
+        apiErrors || [
+          `Unable to ${isEditMode ? "update" : "create"} salary. Please try again.`,
+        ]
       );
     } finally {
       setSaving(false);
@@ -49,7 +77,7 @@ function SalaryForm({ employee, onSuccess, onCancel }) {
 
   return (
     <div className="dashboard-section">
-      <h2>Add Salary</h2>
+      <h2>{isEditMode ? "Edit Salary" : "Add Salary"}</h2>
 
       <p>
         Employee: <strong>{employee.full_name}</strong>
@@ -127,7 +155,11 @@ function SalaryForm({ employee, onSuccess, onCancel }) {
 
         <div className="form-actions">
           <button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Create Salary"}
+            {saving
+              ? "Saving..."
+              : isEditMode
+                ? "Update Salary"
+                : "Create Salary"}
           </button>
 
           <button type="button" onClick={onCancel}>

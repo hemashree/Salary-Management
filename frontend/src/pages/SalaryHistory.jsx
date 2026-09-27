@@ -7,6 +7,7 @@ function SalaryHistory({ employee, onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingSalary, setEditingSalary] = useState(null);
 
   const fetchSalaries = async () => {
     setLoading(true);
@@ -29,9 +30,15 @@ function SalaryHistory({ employee, onBack }) {
     fetchSalaries();
   }, [employee.id]);
 
-  const handleSalaryCreated = () => {
+  const handleSalarySaved = () => {
     setShowForm(false);
+    setEditingSalary(null);
     fetchSalaries();
+  };
+
+  const handleEdit = (salary) => {
+    setEditingSalary(salary);
+    setShowForm(true);
   };
 
   if (showForm) {
@@ -39,8 +46,12 @@ function SalaryHistory({ employee, onBack }) {
       <div className="dashboard">
         <SalaryForm
           employee={employee}
-          onSuccess={handleSalaryCreated}
-          onCancel={() => setShowForm(false)}
+          salary={editingSalary}
+          onSuccess={handleSalarySaved}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingSalary(null);
+          }}
         />
       </div>
     );
@@ -57,7 +68,12 @@ function SalaryHistory({ employee, onBack }) {
           {employee.full_name} — {employee.designation}
         </p>
 
-        <button onClick={() => setShowForm(true)}>
+        <button
+          onClick={() => {
+            setEditingSalary(null);
+            setShowForm(true);
+          }}
+        >
           + Add Salary
         </button>
       </div>
@@ -82,6 +98,7 @@ function SalaryHistory({ employee, onBack }) {
                   <th>Currency</th>
                   <th>Effective From</th>
                   <th>Effective To</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -114,6 +131,14 @@ function SalaryHistory({ employee, onBack }) {
 
                     <td>
                       {salary.effective_to || "Current"}
+                    </td>
+
+                    <td>
+                      <button
+                        onClick={() => handleEdit(salary)}
+                      >
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 ))}
