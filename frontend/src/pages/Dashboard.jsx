@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
+const currencySymbols = {
+  INR: "₹",
+  USD: "$",
+  GBP: "£",
+  EUR: "€",
+  CAD: "C$",
+};
+
+function formatSalary(amount, currency) {
+  const symbol = currencySymbols[currency] || currency;
+
+  return `${symbol}${Number(amount).toLocaleString()}`;
+}
+
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,15 +60,31 @@ function Dashboard() {
           <h3>Salary Records</h3>
           <p>{dashboard.total_salary_records.toLocaleString()}</p>
         </div>
+      </div>
 
-        <div className="summary-card">
-          <h3>Total Salary</h3>
-          <p>₹{Number(dashboard.total_salary).toLocaleString()}</p>
-        </div>
+      <div className="dashboard-section">
+        <h2>Salary by Currency</h2>
 
-        <div className="summary-card">
-          <h3>Average Salary</h3>
-          <p>₹{Number(dashboard.average_salary).toLocaleString()}</p>
+        <div className="data-grid">
+          {dashboard.salary_by_currency.map((item) => (
+            <div className="data-card" key={item.currency}>
+              <strong>{item.currency}</strong>
+
+              <p>
+                Total Salary:{" "}
+                {formatSalary(item.total_salary, item.currency)}
+              </p>
+
+              <p>
+                Average Salary:{" "}
+                {formatSalary(item.average_salary, item.currency)}
+              </p>
+
+              <p>
+                Employees: {item.employee_count.toLocaleString()}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -65,10 +95,12 @@ function Dashboard() {
           {dashboard.salary_by_country.map((item) => (
             <div className="data-card" key={item.country}>
               <strong>{item.country}</strong>
+
               <p>
-                Total Salary: ₹
-                {Number(item.total_salary).toLocaleString()}
+                Total Salary:{" "}
+                {formatSalary(item.total_salary, item.currency)}
               </p>
+
               <p>
                 Employees: {item.employee_count.toLocaleString()}
               </p>
@@ -84,12 +116,10 @@ function Dashboard() {
           {dashboard.salary_by_department.map((item) => (
             <div className="data-card" key={item.department}>
               <strong>{item.department}</strong>
+
               <p>
-                Total Salary: ₹
-                {Number(item.total_salary).toLocaleString()}
-              </p>
-              <p>
-                Employees: {item.employee_count.toLocaleString()}
+                Employee Count:{" "}
+                {item.employee_count.toLocaleString()}
               </p>
             </div>
           ))}
